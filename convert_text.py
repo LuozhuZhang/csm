@@ -13,6 +13,10 @@ os.environ["NO_TORCH_COMPILE"] = "1"
 os.environ["PYTORCH_ENABLE_MPS_FALLBACK"] = "1"
 os.environ["FORCE_CPU"] = "1"
 
+# Create output directory if it doesn't exist
+OUTPUT_DIR = "output"
+os.makedirs(OUTPUT_DIR, exist_ok=True)
+
 # 📝 Edit your texts here - add as many as you want
 TEXTS_TO_CONVERT = [
   "Hello, welcome to the future of artificial intelligence.",
@@ -51,11 +55,12 @@ def main():
   
   # Convert each text in the list
   for i, text in enumerate(TEXTS_TO_CONVERT, 1):
-    output_file = f"speech_{i:02d}.wav"
+    output_file = os.path.join(OUTPUT_DIR, f"speech_{i:02d}.wav")
     convert_single_text(generator, text, output_file)
   
   print(f"\n🎉 Converted {len(TEXTS_TO_CONVERT)} texts successfully!")
-  print("📁 Output files: speech_01.wav, speech_02.wav, ...")
+  print(f"📁 Output files saved to: {OUTPUT_DIR}/")
+  print(f"📋 Files: speech_01.wav, speech_02.wav, ...")
 
 if __name__ == "__main__":
   main() 

@@ -13,6 +13,10 @@ os.environ["NO_TORCH_COMPILE"] = "1"
 os.environ["PYTORCH_ENABLE_MPS_FALLBACK"] = "1"
 os.environ["FORCE_CPU"] = "1"  # Force CPU for stability
 
+# Create output directory if it doesn't exist
+OUTPUT_DIR = "output"
+os.makedirs(OUTPUT_DIR, exist_ok=True)
+
 def main():
   # 🎯 Configuration options
   text_to_convert = "Hello, this is a simple text to speech demonstration using CSM one B model."
@@ -35,8 +39,8 @@ def main():
     max_audio_length_ms=10_000,  # 10 seconds max
   )
   
-  # Save to file with speaker info
-  output_file = f"output_speech_speaker{speaker_id}.wav"
+  # Save to file with speaker info in output directory
+  output_file = os.path.join(OUTPUT_DIR, f"output_speech_speaker{speaker_id}.wav")
   torchaudio.save(
     output_file,
     audio_tensor.unsqueeze(0).cpu(),
@@ -45,6 +49,7 @@ def main():
   
   print(f"✅ Speech saved to: {output_file}")
   print(f"📊 Audio duration: {len(audio_tensor)/generator.sample_rate:.2f} seconds")
+  print(f"📁 Output directory: {OUTPUT_DIR}/")
   print(f"\n💡 Tips:")
   print(f"  • Change 'speaker_id' (0-2) for different voices")
   print(f"  • For advanced voice styles, use custom voice prompts")
