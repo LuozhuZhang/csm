@@ -19,7 +19,7 @@ os.makedirs(OUTPUT_DIR, exist_ok=True)
 
 def main():
   # 🎯 Configuration options
-  text_to_convert = "Hello, this is a simple text to speech demonstration using CSM one B model."
+  text_to_convert = "CSM is a speech generation model from Sesame that generates RVQ audio codes from text and audio input! The model architecture employs a Llama backbone and a smaller audio decoder that produces Mimi audio codes."
   
   # 🎭 Voice settings
   speaker_id = 1  # 🔄 Choose speaker (0, 1, 2) for different voice characteristics
