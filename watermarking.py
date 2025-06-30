@@ -17,7 +17,15 @@ def cli_check_audio() -> None:
     check_audio_from_file(args.audio_path)
 
 
-def load_watermarker(device: str = "cuda") -> silentcipher.server.Model:
+def load_watermarker(device: str = None) -> silentcipher.server.Model:
+    if device is None:
+        if torch.cuda.is_available():
+            device = "cuda"
+        elif torch.backends.mps.is_available():
+            device = "mps"
+        else:
+            device = "cpu"
+            
     model = silentcipher.get_model(
         model_type="44.1k",
         device=device,
@@ -60,7 +68,7 @@ def verify(
 
 
 def check_audio_from_file(audio_path: str) -> None:
-    watermarker = load_watermarker(device="cuda")
+    watermarker = load_watermarker()
 
     audio_array, sample_rate = load_audio(audio_path)
     is_watermarked = verify(watermarker, audio_array, sample_rate, CSM_1B_GH_WATERMARK)

@@ -6,4 +6,11 @@ huggingface_hub==0.28.1
 moshi==0.2.2
 torchtune==0.4.0
 torchao==0.9.0
+# Mac-compatible silentcipher installation
 silentcipher @ git+https://github.com/SesameAILabs/silentcipher@master
+
+# Mac MLX alternative (optional, for M-series Macs)
+# moshi-mlx==0.2.2
+
+# Add MPS fallback environment variable setting instructions
+# Export this before running: export PYTORCH_ENABLE_MPS_FALLBACK=1

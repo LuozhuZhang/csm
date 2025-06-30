@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from typing import List, Tuple
+import os
 
 import torch
 import torchaudio
@@ -168,7 +169,18 @@ class Generator:
         return audio
 
 
-def load_csm_1b(device: str = "cuda") -> Generator:
+def load_csm_1b(device: str = None) -> Generator:
+    if device is None:
+        # Check for forced CPU mode
+        if os.environ.get("FORCE_CPU") == "1":
+            device = "cpu"
+        elif torch.cuda.is_available():
+            device = "cuda"
+        elif torch.backends.mps.is_available():
+            device = "mps"
+        else:
+            device = "cpu"
+    
     model = Model.from_pretrained("sesame/csm-1b")
     model.to(device=device, dtype=torch.bfloat16)
 
