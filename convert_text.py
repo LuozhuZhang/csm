@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 """
-Easy Text-to-Speech Converter
-Batch text-to-speech conversion tool for multiple texts
+Batch Text-to-Speech Converter using CSM-1B
+Efficient batch processing with model reuse
 """
 import os
+import time
 import torch
 import torchaudio
 from generator import load_csm_1b
@@ -17,50 +18,73 @@ os.environ["FORCE_CPU"] = "1"
 OUTPUT_DIR = "output"
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
-# 📝 Edit your texts here - add as many as you want
-TEXTS_TO_CONVERT = [
-  "Hello, welcome to the future of artificial intelligence.",
-  "This is CSM one B, a conversational speech model.",
-  "You can easily convert any English text to natural speech.",
-]
-
-def convert_single_text(generator, text, output_filename):
-  """Convert single text to speech with default voice settings"""
-  print(f"🔄 Converting: {text[:50]}...")
-  
-  audio_tensor = generator.generate(
-    text=text,
-    speaker=0,  # Use default speaker (speaker 0)
-    context=[],  # No voice context for batch processing
-    max_audio_length_ms=15_000,  # 15 seconds max
-  )
-  
-  torchaudio.save(
-    output_filename,
-    audio_tensor.unsqueeze(0).cpu(),
-    generator.sample_rate
-  )
-  
-  duration = len(audio_tensor) / generator.sample_rate
-  print(f"✅ Saved: {output_filename} ({duration:.1f}s)")
-
 def main():
-  print("🎤 CSM-1B Batch Text-to-Speech Converter")
-  print("=" * 40)
+  # 📝 Texts to convert
+  texts_to_convert = [
+    "Hello, this is the first demonstration of CSM text to speech.",
+    "CSM is a powerful speech generation model that creates high-quality audio.",
+    "This batch conversion shows how to process multiple texts efficiently."
+  ]
   
-  # Load model once for efficiency
-  print("📱 Loading model...")
+  # 🎭 Voice settings
+  speaker_id = 2  # Choose speaker (0, 1, 2) for different voice characteristics
+  
+  print("🎤 Loading CSM-1B model...")
+  model_start_time = time.time()
   generator = load_csm_1b(device="cpu")
-  print("✅ Model ready!")
+  model_load_time = time.time() - model_start_time
+  print(f"✅ Model loaded successfully! (⏱️ Loading time: {model_load_time:.2f}s)")
   
-  # Convert each text in the list
-  for i, text in enumerate(TEXTS_TO_CONVERT, 1):
+  print(f"🔄 Converting {len(texts_to_convert)} texts...")
+  print(f"🎭 Using speaker ID: {speaker_id}")
+  
+  total_tts_time = 0
+  total_audio_duration = 0
+  
+  # Convert each text
+  tts_start_time = time.time()
+  for i, text in enumerate(texts_to_convert, 1):
+    print(f"\n📝 Processing text {i}/{len(texts_to_convert)}: {text[:50]}...")
+    
+    # Generate speech for current text
+    single_start = time.time()
+    audio_tensor = generator.generate(
+      text=text,
+      speaker=speaker_id,
+      context=[],  # No context for basic voice variation
+      max_audio_length_ms=10_000,  # 10 seconds max per text
+    )
+    single_time = time.time() - single_start
+    
+    # Save to file
     output_file = os.path.join(OUTPUT_DIR, f"speech_{i:02d}.wav")
-    convert_single_text(generator, text, output_file)
+    torchaudio.save(
+      output_file,
+      audio_tensor.unsqueeze(0).cpu(),
+      generator.sample_rate
+    )
+    
+    # Calculate metrics
+    audio_duration = len(audio_tensor) / generator.sample_rate
+    total_audio_duration += audio_duration
+    
+    print(f"✅ Saved: {output_file} ({audio_duration:.2f}s audio, {single_time:.2f}s processing)")
   
-  print(f"\n🎉 Converted {len(TEXTS_TO_CONVERT)} texts successfully!")
-  print(f"📁 Output files saved to: {OUTPUT_DIR}/")
-  print(f"📋 Files: speech_01.wav, speech_02.wav, ...")
+  total_tts_time = time.time() - tts_start_time
+  total_time = model_load_time + total_tts_time
+  
+  # Performance summary
+  print(f"\n⏱️ Performance Summary:")
+  print(f"  • Model loading time: {model_load_time:.2f}s")
+  print(f"  • Total TTS processing: {total_tts_time:.2f}s")
+  print(f"  • Total processing time: {total_time:.2f}s")
+  print(f"  • Total audio generated: {total_audio_duration:.2f}s")
+  print(f"  • Average real-time factor: {total_tts_time/total_audio_duration:.2f}x")
+  print(f"  • Files per second: {len(texts_to_convert)/total_tts_time:.2f}")
+  
+  print(f"\n✅ Batch conversion completed!")
+  print(f"📁 All files saved to: {OUTPUT_DIR}/")
+  print(f"🎵 Generated {len(texts_to_convert)} audio files")
 
 if __name__ == "__main__":
   main() 
